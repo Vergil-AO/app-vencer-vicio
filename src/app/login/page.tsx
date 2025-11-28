@@ -1,81 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { Brain, Mail, Lock, User, ArrowRight, Shield, Loader2 } from 'lucide-react';
+import { Brain, Mail, Lock, User, ArrowRight, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { APP_NAME, APP_TAGLINE } from '@/lib/constants';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: ''
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      if (isLogin) {
-        // Login
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          router.push('/dashboard');
-        }
-      } else {
-        // Cadastro
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              full_name: formData.name,
-            }
-          }
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          // Criar perfil inicial
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: data.user.id,
-                full_name: formData.name,
-                clean_since: new Date().toISOString().split('T')[0],
-                total_days_clean: 0,
-                current_streak: 0,
-                longest_streak: 0,
-              }
-            ]);
-
-          if (profileError) console.error('Erro ao criar perfil:', profileError);
-
-          router.push('/dashboard');
-        }
-      }
-    } catch (err: any) {
-      setError(err.message || 'Ocorreu um erro. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
+    // Simular login/cadastro
+    router.push('/dashboard');
   };
 
   return (
@@ -126,13 +70,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-sm text-red-400">
-              {error}
-            </div>
-          )}
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
@@ -178,7 +115,6 @@ export default function LoginPage() {
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                   placeholder="••••••••"
                   required
-                  minLength={6}
                 />
               </div>
             </div>
@@ -197,20 +133,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-cyan-700 transition-all hover:scale-105 shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-cyan-700 transition-all hover:scale-105 shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                <>
-                  {isLogin ? 'Entrar' : 'Criar Conta'}
-                  <ArrowRight className="w-5 h-5" />
-                </>
-              )}
+              {isLogin ? 'Entrar' : 'Criar Conta'}
+              <ArrowRight className="w-5 h-5" />
             </button>
           </form>
 
